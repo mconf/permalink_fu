@@ -1,7 +1,10 @@
+# encoding: utf-8
 require 'yaml'
 require 'iconv'
 
 module PermalinkFu
+
+
   def has_permalink(attr_names = [], permalink_field = nil, options = {})
     if permalink_field.is_a?(Hash)
       options = permalink_field
@@ -19,8 +22,27 @@ module PermalinkFu
   class << self
     # This method does the actual permalink escaping.
     def escape(str, klass = nil)
-      s = ClassMethods.decode(str)#.force_encoding("UTF-8")
-      s = Iconv.iconv('ascii//ignore//translit', 'utf-8', s).to_s
+      s = str
+
+      # replace special chars for equivalent
+      s.gsub!(/[ãáàäâå]/, 'a')
+      s.gsub!(/[ẽéèëê]/, 'e')
+      s.gsub!(/[ĩíìïî]/, 'i')
+      s.gsub!(/[õóòöô]/, 'o')
+      s.gsub!(/[ũúùüû]/, 'u')
+      s.gsub!(/[ýÿ]/, 'y')
+      s.gsub!(/[ñ]/, 'n')
+      s.gsub!(/[ç]/, 'c')
+
+      s.gsub!(/[ÃÁÀÄÂ]/, 'a')
+      s.gsub!(/[ẼÉÈËÊ]/, 'e')
+      s.gsub!(/[ĨÍÌÏÎ]/, 'i')
+      s.gsub!(/[ÕÓÒÖÔ]/, 'o')
+      s.gsub!(/[ŨÚÙÜÛ]/, 'u')
+      s.gsub!(/[ÝŸ]/, 'y')
+      s.gsub!(/[Ñ]/, 'n')
+      s.gsub!(/[Ç]/, 'c')
+
       s.gsub!(/[^\w_ \-]+/i,   '') # Remove unwanted chars.
       s.gsub!(/[ \-]+/i,      '-') # No more than one of the separator in a row.
       s.gsub!(/^\-|\-$/i,      '') # Remove leading/trailing separator.
