@@ -4,7 +4,6 @@ require 'iconv'
 
 module PermalinkFu
 
-
   def has_permalink(attr_names = [], permalink_field = nil, options = {})
     if permalink_field.is_a?(Hash)
       options = permalink_field
@@ -15,11 +14,15 @@ module PermalinkFu
       self.permalink_field      = (permalink_field || 'permalink').to_s
       self.permalink_options    = {:unique => true}.update(options)
     end
-    
+
     include InstanceMethods
   end
 
   class << self
+
+    attr_accessor :allow_numeric_permalinks
+    PermalinkFu.allow_numeric_permalinks = false
+
     # This method does the actual permalink escaping.
     def escape(str, klass = nil)
       s = str
@@ -47,7 +50,7 @@ module PermalinkFu
       s.gsub!(/[ \-]+/i,      '-') # No more than one of the separator in a row.
       s.gsub!(/^\-|\-$/i,      '') # Remove leading/trailing separator.
       s.downcase!
-      s = "#{klass}-#{s}" if klass && Integer(s) rescue s
+      s = "#{klass}-#{s}" if klass && Integer(s) && !PermalinkFu.allow_numeric_permalinks rescue s
       s.size == 0 ? ClassMethods.random_permalink : s
     end
   end
@@ -58,7 +61,7 @@ module PermalinkFu
     CODEPOINTS = Hash.new { |h, k|
       h[k] = YAML::load_file(File.join(File.dirname(__FILE__), "data", "#{k}.yml"))
     }
-    
+
     class << self
       def decode(string)
         string.gsub(/[^\x00-\x7f]/u) do |codepoint|
@@ -69,12 +72,12 @@ module PermalinkFu
           end
         end
       end
-      
+
       def random_permalink
         rand(Time.now.to_i**2).to_s(36)
       end
     end
-  
+
     def self.setup_permalink_fu_on(base)
       base.extend self
       class << base
