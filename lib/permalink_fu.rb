@@ -25,7 +25,7 @@ module PermalinkFu
 
     # This method does the actual permalink escaping.
     def escape(str, klass = nil)
-      s = str
+      s = str.force_encoding("UTF-8")
 
       # replace special chars for equivalent
       s.gsub!(/[ãáàäâå]/, 'a')
